@@ -64,19 +64,20 @@ int collision_detect(Point* point, int centerx, int centery, int radius) {
 }
 
 int main() {
-    const char* filename;
-    scanf("%s", &filename); // get txt file name
+    char filename[300];
+    scanf("%s", filename); // get txt file name
     FILE* file = (FILE*) fopen(filename, "r"); // open txt file
     assert(file != NULL);
     
     Point* head_point = read_in_points(file); // returns head point
 
+    fclose(file);
     int centerx;
     int centery;
     int radius;
     int collisions;
     // Take circle parameters until input is not valid (not 3 ints)
-    while (scanf("%d %d %d", &centerx, &centery, &radius) == 3) {
+    while (scanf("%d %d %d\n", &centerx, &centery, &radius) == 3) {
         collisions = collision_detect(head_point, centerx, centery, radius);
         printf("%d\n", collisions);
     }
