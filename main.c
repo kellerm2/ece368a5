@@ -71,17 +71,18 @@ int main() {
     
     Point* head_point = read_in_points(file); // returns head point
 
-    fclose(file);
+    
     int centerx;
     int centery;
     int radius;
     int collisions;
     // Take circle parameters until input is not valid (not 3 ints)
-    while (scanf("%d %d %d\n", &centerx, &centery, &radius) == 3) {
+    while (scanf("%d %d %d", &centerx, &centery, &radius) == 3) {
         collisions = collision_detect(head_point, centerx, centery, radius);
         printf("%d\n", collisions);
     }
-    
+
+    fclose(file);
     Point* point = head_point;
     Point* to_free;
     while (point != NULL) { // free points until linked list is empty/NULL
