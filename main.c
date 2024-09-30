@@ -63,9 +63,10 @@ int collision_detect(Point* point, int centerx, int centery, int radius) {
     return collisions;
 }
 
-int main() {
-    char filename[300];
-    scanf("%s", filename); // get txt file name
+int main(int argc, char* argv[]) {
+    if (argc != 2) return 0; // args ./a5 and filename
+    char* filename = argv[1];
+
     FILE* file = (FILE*) fopen(filename, "r"); // open txt file
     assert(file != NULL);
     
