@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <math.h>
 
 typedef struct Point {
     int x;
@@ -113,7 +112,7 @@ int collision_detect(Node* bst, int centerx, int centery, int radius, int collis
 
     int circ_eq = (centerx - bst->point.x) * (centerx - bst->point.x) + (centery - bst->point.y) *
     (centery - bst->point.y);
-    int i = radius*radius;
+    int i = radius * radius;
     if (circ_eq <= i) collisions++;
 
     return collisions;

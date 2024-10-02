@@ -15,7 +15,7 @@ testmemory: $(TARGET)
 all: a5
 
 a5: $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) -lm
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
 clean:
 	$(RM) $(TARGET) $(OBJS) memcheck.txt
