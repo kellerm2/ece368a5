@@ -15,16 +15,17 @@ typedef struct Node {
     struct Node* right;
 } Node;
 
-Point* read_in_points(FILE* file);
+Point* read_in_points(FILE* file, int* count);
+int compare_fxn(const void* a, const void* b);
 Node* create_node(Point* point);
-Node* build_bst(Node* head_point, Point point, int height);
+Node* build_bst(Point* arr, int l, int r);
 int collision_detect(Node* bst, int centerx, int centery, int radius, int collisions);
 void free_bst(Node* bst);
 
 // Read in x y from input file, assign first to head_point
 // Create next point of prev point by reading in the rest of the file
 // contents until there are no more items from the file to be read
-Point* read_in_points(FILE* file) {
+Point* read_in_points(FILE* file, int* count) {
     int x;
     int y;
     
@@ -41,8 +42,24 @@ Point* read_in_points(FILE* file) {
         head_point[i] -> x = x;
         head_point[i] -> y = y;
     }
-
+     *count = i;
     return head_point;
+}
+
+int compare_fxn(const void* a, const void* b) {
+    Point* pointA = (Point*) a;
+    Point* pointB = (Point*) b;
+    
+    // compare x
+    if (pointA->x < pointB->x) return -1; // if less move to front
+    if (pointA->x > pointB->x) return 1; // if more move to back
+    
+    // x is same, look at y
+    if (pointA->y < pointB->y) return -1; // if less move to front
+    if (pointA->y > pointB->y) return 1; // if more, move to back
+    
+    // if x and y same, do nothing
+    return 0;
 }
 
 // Allocate memory for a point, assign x,y data to point, assign next of point to NULL
@@ -58,50 +75,41 @@ Node* create_node(Point point) {
 
 // Build binary search tree using balance between -1 and 1 to maintain height between
 // branches
-Node* build_bst(Node* head_point, Point point, int height) {
-    if (head_point == NULL) { // found place, need to create new node
-        Node* node = create_node(point, x, y);
-        return node;
-    }
+Node* build_bst(Point* arr, int l, int r) {
+    if (l > r) return NULL;
     
-    int top_dist = height % 2; // working in 2 dimensions, so if height is even need to 
-    // look to x coordinate, if height odd, need to look to y coordinate to balance
-
-    if (top_dist == 0) { 
-        if (point.x < head_point->point.x) // if x less than head x, move to left of head
-            head_point->left = build_bst(head_point->left, point, top_dist + 1);
-    } 
-    else {
-        if (point.y < head_point->point.y) // if y less then head y, move to left of head
-            head_point->left = build_bst(head_point->left, point, top_dist + 1);
-    }
-
-    return head_point;
+    int m = (l + r) / 2; 
+    
+    Node* node = (Node*) malloc(sizeof(Node));
+    assert(node != NULL);
+    
+    node->point = arr[m];
+    node->left = build_bst(arr, l, m - 1);
+    node->right = build_bst(arr, m + 1, r);
+    
+    return node;
 }
 
 // Determine how many points are on or within the given circle using circle
 // equation (h-x)^2 + (k-y)^2 <= r^2 where h,k is the center coordinates
 int collision_detect(Node* bst, int centerx, int centery, int radius, int collisions) {
-    if (bst == NULL) return 0;
+    if (bst == NULL) return collisions; // reached end of branch
     
-    int circ_eq = pow((centerx - point->x), 2) + pow((centery - point->y), 2);
+    int circ_eq = pow((centerx - bst->point.x), 2) + pow((centery - bst->point.y), 2);
     if (circ_eq <= pow(radius, 2)) collisions++;
     
-    // is x coordinate within max range of x across circle across center
-    if (bst->point.x >= centerx - radius && bst->point.x <= centerx + radius) {
-        // look at left of current to check if within max range
-        collision_detect(bst->left, centerx, centery, radius, collisions);
-        // look at right to check if within max range
-        collision_detect(bst->right, centerx, centery, radius, collisions);
-    } 
-    // is x coordinate within max range of x across circle across center
-    else if (bst->point.y >= centery - radius && bst->point.y <= centery + radius) {
-        // look at left of current to check if within max range
-        collision_detect(bst->left, centerx, centery, radius, collisions);
-        // look at right to check if within max range
-        collision_detect(bst->right, centerx, centery, radius, collisions);
+    // look at left side, if is greater than or equal to left most boundary or bottom most boundary
+    if (bst->point.x >= centerx - radius) {
+        collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
+        if (bst->point.y >= centery - radius)
+            collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
     }
-
+    // look at right side, if it less than or equal to right most boundary or top most boundary
+    if (bst->point.x <= centerx + radius) {
+        collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
+        if (bst->point.y <= centery + radius)
+            collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
+    }
     return collisions;
 }
 
@@ -127,12 +135,11 @@ int main(int argc, char* argv[]) {
     Point* file_point = read_in_points(file, &count); // returns head point
     fclose(file);
     Node* bst = NULL; // initialize BST
+
+    qsort(file_point, count, sizeof(Point), compare_fxn)
     
     // Build BST with file points and head_point node
-    while (file_point[i]) {
-        bst = build_bst(bst, file_point[i], 0); // start at height 0 since bst is empty
-        i++;
-    }
+    bst = build_bst(file_point, 0, count - 1); // start at height 0 since bst is empty
 
     int centerx;
     int centery;
