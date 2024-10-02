@@ -111,8 +111,9 @@ int collision_detect(Node* bst, int centerx, int centery, int radius, int collis
         collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
     }
 
-    int circ_eq = pow((centerx - bst->point.x), 2) + pow((centery - bst->point.y), 2);
-    if (circ_eq <= pow(radius, 2)) collisions++;
+    int circ_eq = (centerx - bst->point.x) * (centerx - bst->point.x) + (centery - bst->point.y) *
+    (centery - bst->point.y);
+    if (circ_eq <= radius * radius) collisions++;
 
     return collisions;
 }
