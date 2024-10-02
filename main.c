@@ -91,7 +91,7 @@ Node* build_bst(Point* arr, int l, int r) {
     node->point = arr[m];
     node->left = build_bst(arr, l, m - 1);
     node->right = build_bst(arr, m + 1, r);
-    
+
     return node;
 }
 
@@ -102,21 +102,18 @@ Node* build_bst(Point* arr, int l, int r) {
 int collision_detect(Node* bst, int centerx, int centery, int radius, int collisions) {
     if (bst == NULL) return collisions; // reached end of branch
     
-    int circ_eq = pow((centerx - bst->point.x), 2) + pow((centery - bst->point.y), 2);
-    if (circ_eq <= pow(radius, 2)) collisions++;
-    
     // look at left side, if is greater than or equal to left most boundary or bottom most boundary
     if (bst->point.x >= centerx - radius) {
         collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
-        // if (bst->point.y >= centery - radius)
-        //     collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
     }
     // look at right side, if it less than or equal to right most boundary or top most boundary
     if (bst->point.x <= centerx + radius) {
         collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
-        // if (bst->point.y <= centery + radius)
-        //     collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
     }
+
+    int circ_eq = pow((centerx - bst->point.x), 2) + pow((centery - bst->point.y), 2);
+    if (circ_eq <= pow(radius, 2)) collisions++;
+
     return collisions;
 }
 
@@ -147,7 +144,7 @@ int main(int argc, char* argv[]) {
     qsort(file_point, count, sizeof(Point), compare_fxn);
     
     // Build BST with file points and head_point node
-    bst = build_bst(file_point, 0, count - 1); // start at height 0 since bst is empty
+    bst = build_bst(file_point, 0, count - 1);
 
     int centerx;
     int centery;
