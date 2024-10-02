@@ -17,13 +17,13 @@ typedef struct Node {
 
 Point* read_in_points(FILE* file, int* count);
 int compare_fxn(const void* a, const void* b);
-Node* create_node(Point* point);
+Node* create_node(Point point);
 Node* build_bst(Point* arr, int l, int r);
 int collision_detect(Node* bst, int centerx, int centery, int radius, int collisions);
 void free_bst(Node* bst);
 
 // Read in x y from input file, assign first to head_point
-// Create next point of prev point by reading in the rest of the file
+// Create next point by reading in the rest of the file
 // contents until there are no more items from the file to be read
 Point* read_in_points(FILE* file, int* count) {
     int x;
@@ -37,15 +37,19 @@ Point* read_in_points(FILE* file, int* count) {
     
     int i = 1;
     while (fscanf(file, "%d %d", &x, &y) == 2) { // reads 2 ints at a time, fscanf returns 2
-        head_point = (Point*) realloc(head_point, (++i * sizeof(Point)));
+        head_point = (Point*) realloc(head_point, ((i + 1)* sizeof(Point)));
         assert(head_point != NULL);
-        head_point[i] -> x = x;
-        head_point[i] -> y = y;
+        head_point[i].x = x;
+        head_point[i].y = y;
+        i++;
     }
      *count = i;
     return head_point;
 }
 
+// qsort returns -1 to move value to the left of array
+// returns 1 to move value to right of array to get points in sorted order by x ascending first
+// then by y value ascending
 int compare_fxn(const void* a, const void* b) {
     Point* pointA = (Point*) a;
     Point* pointB = (Point*) b;
@@ -73,8 +77,9 @@ Node* create_node(Point point) {
     return node;
 }
 
-// Build binary search tree using balance between -1 and 1 to maintain height between
-// branches
+// Build balanced binary search tree based on qsorted array of
+// points, top node is the middle, and create balanced tree using the
+// middle and either l or r most point
 Node* build_bst(Point* arr, int l, int r) {
     if (l > r) return NULL;
     
@@ -92,6 +97,8 @@ Node* build_bst(Point* arr, int l, int r) {
 
 // Determine how many points are on or within the given circle using circle
 // equation (h-x)^2 + (k-y)^2 <= r^2 where h,k is the center coordinates
+// If x is on left side of circle within max dist, move to left to keep checking until no longer in
+// If x is on right side of circle within max dist, move to right to keep checking until no longer in
 int collision_detect(Node* bst, int centerx, int centery, int radius, int collisions) {
     if (bst == NULL) return collisions; // reached end of branch
     
@@ -101,18 +108,19 @@ int collision_detect(Node* bst, int centerx, int centery, int radius, int collis
     // look at left side, if is greater than or equal to left most boundary or bottom most boundary
     if (bst->point.x >= centerx - radius) {
         collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
-        if (bst->point.y >= centery - radius)
-            collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
+        // if (bst->point.y >= centery - radius)
+        //     collisions = collision_detect(bst->left, centerx, centery, radius, collisions);
     }
     // look at right side, if it less than or equal to right most boundary or top most boundary
     if (bst->point.x <= centerx + radius) {
         collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
-        if (bst->point.y <= centery + radius)
-            collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
+        // if (bst->point.y <= centery + radius)
+        //     collisions = collision_detect(bst->right, centerx, centery, radius, collisions);
     }
     return collisions;
 }
 
+// Frees all left, then all right, and head node of binary search tree
 void free_bst(Node* bst) {
     if (bst == NULL) {
         return;
@@ -136,7 +144,7 @@ int main(int argc, char* argv[]) {
     fclose(file);
     Node* bst = NULL; // initialize BST
 
-    qsort(file_point, count, sizeof(Point), compare_fxn)
+    qsort(file_point, count, sizeof(Point), compare_fxn);
     
     // Build BST with file points and head_point node
     bst = build_bst(file_point, 0, count - 1); // start at height 0 since bst is empty
